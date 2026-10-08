@@ -177,7 +177,7 @@ class VoipCredit extends \Ease\Sand
             $amount = (float) ($entry['mnozMj'] ?? 1) * (float) ($entry['cenaMj'] ?? 0);
 
             if ($amount > 0.0) {
-                $orders[] = ['ipexuser' => (string) $entry['ipexuser'], 'phoneno' => (string) $entry['phoneno'], 'amount' => $amount];
+                $orders[] = ['ipexuser' => (string) $entry['ipexuser'], 'phoneno' => ltrim((string) $entry['phoneno'], '+'), 'amount' => $amount];
             }
         }
 
@@ -215,9 +215,14 @@ class VoipCredit extends \Ease\Sand
         $servicer->ignore404(true);
         $servicer->loadFromIPEX(['number' => $order['phoneno']]);
         $servicer->ignore404(false);
-        $info = $servicer->getData()[0] ?? [];
 
-        return $this->numberMatches($info, $order, (string) $invoice->getDataValue('firma'));
+        // IPEX may return several/fuzzy records: take only the exact number, exactly once
+        $exact = array_values(array_filter(
+            $servicer->getData() ?: [],
+            static fn ($record): bool => \is_array($record) && ltrim((string) ($record['number'] ?? ''), '+') === $order['phoneno'],
+        ));
+
+        return 1 === \count($exact) && $this->numberMatches($exact[0], $order, (string) $invoice->getDataValue('firma'));
     }
 
     /**
@@ -227,6 +232,7 @@ class VoipCredit extends \Ease\Sand
     public function numberMatches(array $info, array $order, string $firma): bool
     {
         return [] !== $info
+            && ltrim((string) ($info['number'] ?? ''), '+') === $order['phoneno']
             && 'prepaid' === ($info['paymentType'] ?? null)
             && 'active' === ($info['status'] ?? null)
             && (string) ($info['customerId'] ?? '') === $order['ipexuser']

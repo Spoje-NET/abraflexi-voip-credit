@@ -140,7 +140,8 @@ class VoipCreditTest extends TestCase
         }
 
         $this->assertSame([], $credit->creditOrders([['ipexuser' => '77/../x', 'phoneno' => '420123456789', 'cenaMj' => 5]]));
-        $this->assertCount(1, $credit->creditOrders([['ipexuser' => '77', 'phoneno' => '+420123456789', 'cenaMj' => 5]]));
+        $normalized = $credit->creditOrders([['ipexuser' => '77', 'phoneno' => '+420123456789', 'cenaMj' => 5]]);
+        $this->assertSame('420123456789', $normalized[0]['phoneno']);
     }
 
     public function testForeignNumberIsNotCredited(): void
@@ -161,13 +162,16 @@ class VoipCreditTest extends TestCase
     {
         $credit = new VoipCredit($this->createStub(\IPEXB2B\Voip::class));
         $order = $this->order()[0];
-        $info = ['paymentType' => 'prepaid', 'status' => 'active', 'customerId' => '77', 'customerExternId' => 'code:ACME'];
+        $info = ['number' => '420123456789', 'paymentType' => 'prepaid', 'status' => 'active', 'customerId' => '77', 'customerExternId' => 'code:ACME'];
         $this->assertTrue($credit->numberMatches($info, $order, 'code:ACME'));
         $this->assertFalse($credit->numberMatches($info, $order, 'code:OTHER'));
         $this->assertFalse($credit->numberMatches(['customerId' => '99'] + $info, $order, 'code:ACME'));
         $this->assertFalse($credit->numberMatches(['paymentType' => 'postpaid'] + $info, $order, 'code:ACME'));
         $this->assertFalse($credit->numberMatches(['status' => 'suspended'] + $info, $order, 'code:ACME'));
         $this->assertFalse($credit->numberMatches(['customerExternId' => ''] + $info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches(['number' => '420999999999'] + $info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches(array_diff_key($info, ['number' => 1]), $order, 'code:ACME'));
+        $this->assertTrue($credit->numberMatches(['number' => '+420123456789'] + $info, $order, 'code:ACME'));
         $this->assertFalse($credit->numberMatches([], $order, 'code:ACME'));
     }
 }
