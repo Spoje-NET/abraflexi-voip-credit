@@ -25,10 +25,11 @@ class VoipCreditTest extends TestCase
     {
         $invoice = $this->getMockBuilder(\AbraFlexi\FakturaVydana::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getDataValue', 'getRecordIdent', 'unsetLabel'])
+            ->onlyMethods(['getDataValue', 'getRecordIdent', 'unsetLabel', 'getEmail'])
             ->getMock();
         $invoice->method('getDataValue')->willReturnCallback(static fn ($k) => $data[$k] ?? null);
         $invoice->method('getRecordIdent')->willReturn('code:ZAL0002/2026');
+        $invoice->method('getEmail')->willReturn('');
         $invoice->expects($expectUnset ? $this->once() : $this->never())->method('unsetLabel')->willReturn($unsetOk);
 
         return $invoice;
@@ -39,16 +40,17 @@ class VoipCreditTest extends TestCase
      */
     private function paid(string $kod = 'code:KREDIT_VOIP', string $labels = 'API', float $price = 300.0): array
     {
-        return ['stitky' => $labels, 'firma' => 'code:ACME', 'polozkyFaktury' => [['kod' => $kod, 'mnozMj' => '1', 'cenaMj' => (string) $price]]];
+        return ['stitky' => $labels, 'stavUhrK' => 'stavUhr.uhrazeno', 'firma' => 'code:ACME', 'polozkyFaktury' => [['kod' => $kod, 'mnozMj' => '1', 'cenaMj' => (string) $price]]];
     }
 
     /**
      * @param array<int, array<string, mixed>> $orderData
      */
-    private function credit(array $orderData, ?\IPEXB2B\Voip $voip): VoipCredit
+    private function credit(array $orderData, ?\IPEXB2B\Voip $voip, bool $owned = true): VoipCredit
     {
-        $credit = $this->getMockBuilder(VoipCredit::class)->setConstructorArgs([$voip])->onlyMethods(['loadOrderData'])->getMock();
+        $credit = $this->getMockBuilder(VoipCredit::class)->setConstructorArgs([$voip])->onlyMethods(['loadOrderData', 'numberBelongsToCustomer'])->getMock();
         $credit->method('loadOrderData')->willReturn($orderData);
+        $credit->method('numberBelongsToCustomer')->willReturn($owned);
 
         return $credit;
     }
@@ -67,7 +69,7 @@ class VoipCreditTest extends TestCase
      */
     private function order(string $phone = '420123456789', string $price = '300'): array
     {
-        return [['ipexuser' => '77', 'phoneno' => $phone, 'cenaMj' => $price, 'notify' => '']];
+        return [['ipexuser' => '77', 'phoneno' => $phone, 'cenaMj' => $price, 'notify' => 'attacker@example.com']];
     }
 
     public function testSuccessRemovesLabel(): void
@@ -127,5 +129,45 @@ class VoipCreditTest extends TestCase
         $credit = new VoipCredit($this->createStub(\IPEXB2B\Voip::class));
         $this->assertSame([], $credit->creditOrders([['cenik' => 'code:X', 'cenaMj' => 5]]));
         $this->assertCount(1, $credit->creditOrders($this->order()));
+    }
+
+    public function testUrlLikePhoneNumberIsRejected(): void
+    {
+        $credit = new VoipCredit($this->createStub(\IPEXB2B\Voip::class));
+
+        foreach (['http://evil.example/x', '/etc/x', '420123/../x', '420 123', '', "420123\n"] as $bad) {
+            $this->assertSame([], $credit->creditOrders([['ipexuser' => '77', 'phoneno' => $bad, 'cenaMj' => 5]]), $bad);
+        }
+
+        $this->assertSame([], $credit->creditOrders([['ipexuser' => '77/../x', 'phoneno' => '420123456789', 'cenaMj' => 5]]));
+        $this->assertCount(1, $credit->creditOrders([['ipexuser' => '77', 'phoneno' => '+420123456789', 'cenaMj' => 5]]));
+    }
+
+    public function testForeignNumberIsNotCredited(): void
+    {
+        $report = $this->credit($this->order(), $this->voip(200, 0), false)->processInvoice($this->invoice($this->paid(), true, false));
+        $this->assertSame('error', $report['status']);
+        $this->assertSame([], $report['credited']);
+    }
+
+    public function testUnpaidInvoiceIsSkipped(): void
+    {
+        $data = ['stavUhrK' => 'stavUhr.neuhrazeno', 'zbyvaUhradit' => '300'] + $this->paid();
+        $report = $this->credit($this->order(), $this->voip(200, 0))->processInvoice($this->invoice($data, true, false));
+        $this->assertSame('skipped', $report['status']);
+    }
+
+    public function testNumberMatchesRules(): void
+    {
+        $credit = new VoipCredit($this->createStub(\IPEXB2B\Voip::class));
+        $order = $this->order()[0];
+        $info = ['paymentType' => 'prepaid', 'status' => 'active', 'customerId' => '77', 'customerExternId' => 'code:ACME'];
+        $this->assertTrue($credit->numberMatches($info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches($info, $order, 'code:OTHER'));
+        $this->assertFalse($credit->numberMatches(['customerId' => '99'] + $info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches(['paymentType' => 'postpaid'] + $info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches(['status' => 'suspended'] + $info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches(['customerExternId' => ''] + $info, $order, 'code:ACME'));
+        $this->assertFalse($credit->numberMatches([], $order, 'code:ACME'));
     }
 }
