@@ -1,0 +1,5 @@
+abraflexi-voip-credit (0.1.0) stable; urgency=medium
+
+  * Initial release: IPEX VoIP credit (KREDIT_VOIP) for paid AbraFlexi invoices, extracted from SpojeNet/system order plugin VoIPcredit
+
+ -- Vítězslav Dvořák <info@vitexsoftware.cz>  Thu, 08 Oct 2026 16:30:00 +0200

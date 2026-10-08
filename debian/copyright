@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: abraflexi-voip-credit
+Source: https://github.com/Spoje-NET/abraflexi-voip-credit
+
+Files: *
+Copyright: 2026 Vítězslav Dvořák <info@vitexsoftware.cz>
+License: MIT

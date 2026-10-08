@@ -1,0 +1,4 @@
+bin/*                                                  usr/bin/
+src/abraflexi-voip-credit.php                        usr/share/abraflexi-voip-credit/
+src/SpojeNet/AbraFlexiVoipCredit/*                   usr/lib/php/abraflexi-voip-credit/
+debian/autoload.php                                    usr/lib/php/abraflexi-voip-credit/

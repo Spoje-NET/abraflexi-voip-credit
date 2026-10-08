@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php" colors="true">
+    <testsuites>
+        <testsuite name="unit"><directory>tests</directory></testsuite>
+    </testsuites>
+    <php>
+        <env name="EASE_LOGGER" value="console"/>
+        <env name="ABRAFLEXI_URL" value="https://demo.flexibee.eu:5434"/>
+        <env name="ABRAFLEXI_LOGIN" value="winstrom"/>
+        <env name="ABRAFLEXI_PASSWORD" value="winstrom"/>
+        <env name="ABRAFLEXI_COMPANY" value="demo_de"/>
+        <env name="IPEX_URL" value="https://ipex.invalid/api"/>
+        <env name="IPEX_LOGIN" value="test"/>
+        <env name="IPEX_PASSWORD" value="test"/>
+    </php>
+</phpunit>

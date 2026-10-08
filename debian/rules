@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+PKG_VERSION := $(shell dpkg-parsechangelog -S Version | sed 's/~.*//')
+PKG_SOURCE  := $(shell jq -r '.name' composer.json)
+LIBDIR      := debian/abraflexi-voip-credit/usr/lib/php/abraflexi-voip-credit
+
+%:
+	dh $@
+
+override_dh_install:
+	dh_install
+	sed -i "s|'unknown'|'$(PKG_SOURCE)'|" $(LIBDIR)/autoload.php
+	sed -i "s|'0.0.0'|'$(PKG_VERSION)'|"  $(LIBDIR)/autoload.php
+	sed -i "1a defined('APP_VERSION') || define('APP_VERSION', '$(PKG_VERSION)');" $(LIBDIR)/autoload.php
+	sed -i -e 's|\.\./vendor|/usr/lib/php/abraflexi-voip-credit|g' -e "s|'\.\./\.env'|''|g" debian/abraflexi-voip-credit/usr/share/abraflexi-voip-credit/*.php
+	mkdir -p debian/multiflexi-abraflexi-voip-credit/usr/lib/abraflexi-voip-credit/multiflexi
+	for f in multiflexi/*.app.json; do \
+		jq '.version = "$(PKG_VERSION)"' $$f | sponge debian/multiflexi-abraflexi-voip-credit/usr/lib/abraflexi-voip-credit/multiflexi/$$(basename $$f); \
+	done

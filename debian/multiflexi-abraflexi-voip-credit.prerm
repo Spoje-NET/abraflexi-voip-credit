@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove)
+        for file in /usr/lib/abraflexi-voip-credit/multiflexi/*.app.json; do
+            multiflexi-cli application remove-json --file "$file" || true
+        done
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

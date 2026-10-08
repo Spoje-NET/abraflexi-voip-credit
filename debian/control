@@ -1,0 +1,26 @@
+Source: abraflexi-voip-credit
+Section: web
+Priority: optional
+Maintainer: Vítězslav Dvořák <info@vitexsoftware.cz>
+Build-Depends: debhelper-compat (= 13), jq, moreutils, pkg-php-tools
+Standards-Version: 4.5.1
+Homepage: https://github.com/Spoje-NET/abraflexi-voip-credit
+Rules-Requires-Root: no
+
+Package: abraflexi-voip-credit
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}, php-cli, php-spojenet-abraflexi, php-spojenet-ipex-b2b, php-vitexsoftware-ease-core
+Description: Add IPEX VoIP credit for paid AbraFlexi invoices
+ Reads a paid AbraFlexi issued invoice with the KREDIT_VOIP item and adds
+ the ordered prepaid credit to the VoIP number in IPEX (numbers come from
+ the order.json attachment). The "API" label of the invoice is removed only
+ after all credits were added.
+
+Package: multiflexi-abraflexi-voip-credit
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}, multiflexi-cli, multiflexi-abraflexi-ipex
+Pre-Depends: abraflexi-voip-credit
+Description: Add abraflexi-voip-credit into MultiFlexi
+ Application definition for MultiFlexi.

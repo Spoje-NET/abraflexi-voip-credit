@@ -1,0 +1,196 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VitexSoftware/php-vitexsoftware-multiflexi-core/refs/heads/main/schema/application.json",
+  "schemaVersion": "3.4.0",
+  "uuid": "7e41d9b2-0c35-4f8a-b6d1-23a9c8e5f017",
+  "name": {
+    "en": "AbraFlexi VoIP Credit",
+    "cs": "Kredit VoIP z AbraFlexi faktury"
+  },
+  "description": {
+    "en": "Add ordered IPEX VoIP prepaid credit (KREDIT_VOIP) for a paid AbraFlexi invoice",
+    "cs": "Přidá objednaný předplacený kredit VoIP (IPEX, KREDIT_VOIP) za uhrazenou fakturu v AbraFlexi"
+  },
+  "requirements": [
+    "Ipex",
+    "AbraFlexi"
+  ],
+  "tags": [
+    "IPEX",
+    "VoIP",
+    "Credit",
+    "AbraFlexi",
+    "Json"
+  ],
+  "homepage": "https://github.com/Spoje-NET/abraflexi-voip-credit",
+  "ociimage": "docker.io/vitexsoftware/abraflexi-voip-credit",
+  "executable": "abraflexi-voip-credit",
+  "artifacts": [
+    {
+      "name": "voip_credit_report",
+      "path": "${RESULT_FILE}",
+      "type": "file",
+      "description": {
+        "en": "JSON report of the VoIP credit operation",
+        "cs": "JSON report operace dobití kreditu VoIP"
+      }
+    }
+  ],
+  "environment": {
+    "INVOICE_ID": {
+      "type": "string",
+      "description": {
+        "en": "AbraFlexi issued invoice ID or code:CODE (EVENT_RECORD_ID is used when empty)",
+        "cs": "ID nebo code:KÓD vydané faktury v AbraFlexi (při prázdném se použije EVENT_RECORD_ID)"
+      },
+      "defval": "",
+      "required": false,
+      "category": "Behavior"
+    },
+    "ABRAFLEXI_COMPANY": {
+      "type": "string",
+      "description": {
+        "en": "AbraFlexi company code",
+        "cs": "Kód společnosti v AbraFlexi"
+      },
+      "defval": "demo_de",
+      "required": true,
+      "category": "API"
+    },
+    "ABRAFLEXI_LOGIN": {
+      "type": "string",
+      "description": {
+        "en": "AbraFlexi Login",
+        "cs": "AbraFlexi přihlášení"
+      },
+      "defval": "winstrom",
+      "required": true,
+      "category": "API"
+    },
+    "ABRAFLEXI_PASSWORD": {
+      "type": "password",
+      "description": {
+        "en": "AbraFlexi password",
+        "cs": "AbraFlexi heslo"
+      },
+      "defval": "winstrom",
+      "required": true,
+      "category": "API"
+    },
+    "ABRAFLEXI_URL": {
+      "type": "string",
+      "description": {
+        "en": "AbraFlexi Server URI",
+        "cs": "AbraFlexi Server URI"
+      },
+      "defval": "https://demo.flexibee.eu:5434",
+      "required": true,
+      "category": "API"
+    },
+    "APP_DEBUG": {
+      "type": "bool",
+      "description": {
+        "en": "Show debug messages",
+        "cs": "Zobrazovat ladící zprávy"
+      },
+      "defval": "false",
+      "required": false,
+      "category": "Behavior"
+    },
+    "RESULT_FILE": {
+      "type": "string",
+      "description": {
+        "en": "Write output json data to",
+        "cs": "Zapsat výstupní json do"
+      },
+      "defval": "abraflexi_voip_credit.json",
+      "required": false,
+      "category": "Other"
+    },
+    "EASE_LOGGER": {
+      "type": "string",
+      "description": {
+        "en": "Logger type",
+        "cs": "Typ logování"
+      },
+      "defval": "console|syslog",
+      "required": false,
+      "category": "Other"
+    },
+    "IPEX_URL": {
+      "type": "string",
+      "description": {
+        "en": "IPEX API URL",
+        "cs": "IPEX API URL"
+      },
+      "defval": "",
+      "required": true,
+      "category": "API"
+    },
+    "IPEX_LOGIN": {
+      "type": "string",
+      "description": {
+        "en": "IPEX login",
+        "cs": "IPEX přihlášení"
+      },
+      "defval": "",
+      "required": true,
+      "category": "API"
+    },
+    "IPEX_PASSWORD": {
+      "type": "password",
+      "description": {
+        "en": "IPEX password",
+        "cs": "IPEX heslo"
+      },
+      "defval": "",
+      "required": true,
+      "category": "Security"
+    },
+    "IPEX_CREDIT_EXPIRATION": {
+      "type": "string",
+      "description": {
+        "en": "Credit validity in days",
+        "cs": "Platnost kreditu ve dnech"
+      },
+      "defval": "365",
+      "required": false,
+      "category": "Behavior"
+    },
+    "NOTIFY_CUSTOMER": {
+      "type": "bool",
+      "description": {
+        "en": "Send confirmation e-mail to the customer",
+        "cs": "Poslat zákazníkovi potvrzení e-mailem"
+      },
+      "defval": "true",
+      "required": false,
+      "category": "Behavior"
+    }
+  },
+  "exitCodes": {
+    "0": {
+      "description": {
+        "en": "Credit added or nothing to do",
+        "cs": "Kredit přidán nebo není co dělat"
+      },
+      "severity": "success",
+      "retry": false
+    },
+    "1": {
+      "description": {
+        "en": "VoIP credit operation failed (see report)",
+        "cs": "Dobití kreditu VoIP selhalo (viz report)"
+      },
+      "severity": "error",
+      "retry": false
+    },
+    "2": {
+      "description": {
+        "en": "Missing INVOICE_ID",
+        "cs": "Chybí INVOICE_ID"
+      },
+      "severity": "error",
+      "retry": false
+    }
+  }
+}

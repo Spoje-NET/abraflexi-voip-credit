@@ -1,0 +1,26 @@
+{
+    "name": "spojenet/abraflexi-voip-credit",
+    "description": "Add IPEX VoIP prepaid credit for paid AbraFlexi invoices (MultiFlexi application)",
+    "license": "MIT",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Vítězslav Dvořák",
+            "email": "vitezslav.dvorak@spojenet.cz"
+        }
+    ],
+    "require": {
+        "spojenet/flexibee": "^3.7",
+        "spojenet/ipexb2b": "dev-main",
+        "vitexsoftware/ease-core": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "SpojeNet\\AbraFlexiVoipCredit\\": "src/SpojeNet/AbraFlexiVoipCredit"
+        }
+    }
+}

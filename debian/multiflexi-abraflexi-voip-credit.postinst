@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+for file in /usr/lib/abraflexi-voip-credit/multiflexi/*.app.json; do
+	multiflexi-cli application:import-json --file "$file"
+done
+
+#DEBHELPER#
+
+exit 0

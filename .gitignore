@@ -1,0 +1,9 @@
+/vendor/
+/.env
+.phpunit.result.cache
+/debian/abraflexi-voip-credit/
+/debian/multiflexi-abraflexi-voip-credit/
+/debian/*.debhelper.log
+/debian/*.substvars
+/debian/files
+/debian/debhelper-build-stamp
